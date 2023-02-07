@@ -18,8 +18,18 @@ function verifyAccountCPF(req, res, next) {
   req.customer = customer;
 
   return next();
+}
 
+function getBalance(statement) {
+  const balance = statement.reduce((acc, operation) => {
+    if (operation.type === "credit") {
+      return acc + operation.amount;
+    } else {
+      return acc - operation.amount;
+    }
+  }, 0);
 
+  return balance;
 }
 
 app.post("/account", (req, res) => {
@@ -47,6 +57,44 @@ app.get("/statement", verifyAccountCPF, (req, res) => {
   const { customer } = req;
 
   return res.json(customer.statement);
+});
+
+app.post("/deposit", verifyAccountCPF, (req, res) => {
+  const { description, amount } = req.body;
+
+  const { customer } = req;
+
+  const statementOperations = {
+    description,
+    amount,
+    createdAt: new Date(),
+    type: "credit",
+  };
+
+  customer.statement.push(statementOperations);
+
+  return res.status(201).send();
+});
+
+app.post("/withdraw", verifyAccountCPF, (req, res) => {
+  const { amount } = req.body;
+  const { customer } = req;
+
+  const balance = getBalance(customer.statement);
+
+  if (balance < amount) {
+    return res.status(400).json({ error: "Sem money bro ;/" });
+  }
+
+  const statementOperation = {
+    amount,
+    createdAt: new Date(),
+    type: "credit",
+  };
+
+  customer.statement.push(statementOperation);
+
+  return request.status(201).send();
 });
 
 app.listen(3333);
