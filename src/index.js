@@ -1,3 +1,4 @@
+const { response } = require("express");
 const express = require("express");
 const { v4: uuidv4 } = require("uuid");
 
@@ -89,12 +90,12 @@ app.post("/withdraw", verifyAccountCPF, (req, res) => {
   const statementOperation = {
     amount,
     createdAt: new Date(),
-    type: "credit",
+    type: "debit",
   };
 
   customer.statement.push(statementOperation);
 
-  return request.status(201).send();
+  return res.status(201).send();
 });
 
 app.listen(3333);
