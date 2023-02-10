@@ -77,9 +77,9 @@ app.post("/deposit", verifyAccountCPF, (req, res) => {
   return res.status(201).send();
 });
 
-app.post("/withdraw", verifyAccountCPF, (req, res) => {
-  const { amount } = req.body;
-  const { customer } = req;
+app.post("/withdraw", verifyAccountCPF, (request , response) => {
+  const { amount } = request.body;
+  const { customer } = request;
 
   const balance = getBalance(customer.statement);
 
@@ -95,7 +95,7 @@ app.post("/withdraw", verifyAccountCPF, (req, res) => {
 
   customer.statement.push(statementOperation);
 
-  return res.status(201).send();
+  return response.status(201).send();
 });
 
 app.listen(3333);
