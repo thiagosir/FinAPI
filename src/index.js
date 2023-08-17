@@ -77,14 +77,14 @@ app.post("/deposit", verifyAccountCPF, (req, res) => {
   return res.status(201).send();
 });
 
-app.post("/withdraw", verifyAccountCPF, (request , response) => {
-  const { amount } = request.body;
-  const { customer } = request;
+app.post("/withdraw", verifyAccountCPF, (req , res) => {
+  const { amount } = req.body;
+  const { customer } = req;
 
   const balance = getBalance(customer.statement);
 
   if (balance < amount) {
-    return res.status(400).json({ error: "Sem money bro ;/" });
+    return res.status(400).json({ error: "No money bro ;/" });
   }
 
   const statementOperation = {
@@ -95,7 +95,51 @@ app.post("/withdraw", verifyAccountCPF, (request , response) => {
 
   customer.statement.push(statementOperation);
 
-  return response.status(201).send();
+  return res.status(201).send();
 });
+
+app.get("/statement/date", verifyAccountCPF, (req, res) => {
+  const { customer } = req;
+  const { date } = req.query;
+
+  const dateFormat = new Date(date + " 00:00");
+  const statement = customer.statement.filter((statement) => statement.createdAt.toDateString() === new Date(dateFormat).toDateString())
+
+  return res.json(customer.statement);
+});
+
+app.put("/account", verifyAccountCPF, (req, res) => {
+  const { name } = req.body;
+  const { customer } = req;
+
+  customer.name = name;
+
+  return res.status(201).send();
+})
+
+app.get("/account", verifyAccountCPF, (req, res) => {
+  const { customer } = req;
+
+  return res.json(customer);
+
+})
+
+app.delete("/account", verifyAccountCPF, (req, res) => {
+  const { customer } = req;
+
+  customers.splice(customer, 1)
+
+  return res.status(200).json(customers);
+
+})
+
+app.get("/balance", verifyAccountCPF, (req, res) => {
+  const { customer } = req;
+
+  const balance = getBalance(customer.statement);
+  
+  return res.json(balance);
+
+})
 
 app.listen(3333);
